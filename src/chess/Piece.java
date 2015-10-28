@@ -4,6 +4,7 @@ import java.awt.*;
 public class Piece {
     private Color color;
     private int value;
+    private int loyalty;
     Piece(Color _color)
     {
         color = _color;
