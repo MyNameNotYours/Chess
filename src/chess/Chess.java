@@ -1,10 +1,5 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package chess;
-
-
+ 
 import java.io.*;
 import java.awt.*;
 import java.awt.geom.*;
@@ -16,8 +11,8 @@ public class Chess extends JFrame implements Runnable {
     static final int YBORDER = 20;
     static final int YTITLE = 30;
     static final int WINDOW_BORDER = 8;
-    static final int WINDOW_WIDTH = 2*(WINDOW_BORDER + XBORDER) + 495;
-    static final int WINDOW_HEIGHT = YTITLE + WINDOW_BORDER + 2 * YBORDER + 525;
+    static final int WINDOW_WIDTH = 2*(WINDOW_BORDER + XBORDER) + 1864;
+    static final int WINDOW_HEIGHT = YTITLE + WINDOW_BORDER + 2 * YBORDER + 965;
     boolean animateFirstTime = true;
     int xsize = -1;
     int ysize = -1;
@@ -26,33 +21,27 @@ public class Chess extends JFrame implements Runnable {
 
     final int numRows = 8;
     final int numColumns = 8;
-    Piece board[][];
+    int SelectedColumn;
+    int SelectedRow;
+    boolean Menu;
+    Piece board[][]=
+           {{null,null,null,null,null,null,null,null},
+            {null,null,null,null,null,null,null,null},
+            {null,null,null,null,null,null,null,null}, 
+            {null,null,null,null,null,null,null,null},
+            {null,null,null,null,null,null,null,null},
+            {null,null,null,null,null,null,null,null},
+            {null,null,null,null,null,null,null,null},
+            {null,null,null,null,null,null,null,null}};
+    
     boolean playerOnesTurn;
-    boolean moveHappened;
-    int currentRow;
-    int currentColumn;
-    enum WinState
-    {
-        None,PlayerOne,PlayerTwo,Tie
-    }
-    WinState winState;
-    int winRow;
-    int winColumn;
-    
-    int player1Score;
-    int player2Score;
-    
-    enum WinDirection
-    {
-        Horizontal,Vertical,DiagonalUp,DiagonalDown
-    }
-    WinDirection winDirection;    
-    int piecesOnBoard;
-    
     static Chess frame1;
     public static void main(String[] args) {
         frame1 = new Chess();
+        //frame1.setUndecorated(true);
         frame1.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+        //frame1.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        frame1.setResizable(false);
         frame1.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame1.setVisible(true);
     }
@@ -62,101 +51,33 @@ public class Chess extends JFrame implements Runnable {
         addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
                 if (e.BUTTON1 == e.getButton()) {
-                    //left button
-                    if (moveHappened || winState != WinState.None)
-                        return;
-                    
-                    
+                    //left button 
                     int xpos = e.getX() - getX(0);
                     int ypos = e.getY() - getY(0);
                     if (xpos < 0 || ypos < 0 || xpos > getWidth2() || ypos > getHeight2())
                         return;
-//Calculate the width and height of each board square.
-                    int ydelta = getHeight2()/numRows;
-                    int xdelta = getWidth2()/numColumns;
-                    currentColumn = xpos/xdelta;
-//                    int row = ypos/ydelta;
-                    currentRow = numRows - 1;
-                    while (currentRow >= 0 && board[currentRow][currentColumn] != null)
-                    {
-                        currentRow--;
-                    }
-                    if (currentRow >= 0)
-                    {
-                        if (playerOnesTurn)
-                            board[currentRow][currentColumn] = new Piece(Color.red);
-                        else
-                            board[currentRow][currentColumn] = new Piece(Color.black);
-                        playerOnesTurn = !playerOnesTurn;
-                        moveHappened = true;
-                        piecesOnBoard++;
-                    }
+                    //Calculate the width and height of each board square.
+                    int BlockHeight = getHeight2()/numRows;
+                    int BlockWidth = getWidth2()/numColumns;
+                    SelectedColumn = xpos/BlockWidth;
+                    SelectedRow = ypos/BlockHeight;
                 }
                 if (e.BUTTON3 == e.getButton()) {
                     //right button
-                    if(winState != WinState.None)
                     reset();
-                    int xpos = e.getX() - getX(0);
-                    int ypos = e.getY() - getY(0);
-                    if (xpos < 0 || ypos < 0 || xpos > getWidth2() || ypos > getHeight2())
-                        return;
-//Calculate the width and height of each board square.
-                    int ydelta = getHeight2()/numRows;
-                    int xdelta = getWidth2()/numColumns;
-                    currentColumn = xpos/xdelta;
-//                    int row = ypos/ydelta;
-                    currentRow = numRows - 1;
-                    while (currentRow >= 0 && board[currentRow][currentColumn] != null)
-                    {
-                        currentRow--;
-                    }
-                    currentRow++;
-                    if(currentRow > numRows-1)
-                        currentRow =0;
-                    if (currentRow >= 0)
-                    {
-                        if(board[currentRow][currentColumn] != null && 
-                           board[currentRow][currentColumn].getColor() != Color.pink)
-                        {
-                            if (playerOnesTurn && board[currentRow][currentColumn].getColor() != Color.red)
-                                board[currentRow][currentColumn].setColor(Color.pink);
-                            else
-                                board[currentRow][currentColumn].setColor(Color.pink);
-                            playerOnesTurn = !playerOnesTurn;
-                            moveHappened = true;
-                        }
-                    }
                 }
                 repaint();
             }
         });
 
-    addMouseMotionListener(new MouseMotionAdapter() {
-      public void mouseDragged(MouseEvent e) {
-        repaint();
-      }
-    });
-
-    addMouseMotionListener(new MouseMotionAdapter() {
-      public void mouseMoved(MouseEvent e) {
-        repaint();
-      }
-    });
-
         addKeyListener(new KeyAdapter() {
-
             public void keyPressed(KeyEvent e) {
-                if (e.VK_RIGHT == e.getKeyCode())
+                if (e.VK_ESCAPE == e.getKeyCode())
                 {
-                }
-                if (e.VK_LEFT == e.getKeyCode())
-                {
-                }
-                if (e.VK_UP == e.getKeyCode())
-                {
-                }
-                if (e.VK_DOWN == e.getKeyCode())
-                {
+                    if(!Menu)
+                        Menu=true;
+                    else
+                        Menu=false;
                 }
 
                 repaint();
@@ -165,9 +86,6 @@ public class Chess extends JFrame implements Runnable {
         init();
         start();
     }
-
-
-
 
     Thread relaxer;
 ////////////////////////////////////////////////////////////////////////////
@@ -189,7 +107,7 @@ public class Chess extends JFrame implements Runnable {
         }
 
 //fill background
-        g.setColor(Color.cyan);
+        g.setColor(Color.lightGray);
 
         g.fillRect(0, 0, xsize, ysize);
 
@@ -199,16 +117,15 @@ public class Chess extends JFrame implements Runnable {
         g.setColor(Color.white);
         g.fillPolygon(x, y, 4);
 // draw border
-        g.setColor(Color.red);
+        g.setColor(Color.BLACK);
         g.drawPolyline(x, y, 5);
-
+        
         if (animateFirstTime) {
             gOld.drawImage(image, 0, 0, null);
             return;
-        }
-
-        g.setColor(Color.gray);
+        }        
 //horizontal lines
+        g.setColor(Color.gray);
         for (int zi=1;zi<numRows;zi++)
         {
             g.drawLine(getX(0) ,getY(0)+zi*getHeight2()/numRows ,
@@ -220,64 +137,39 @@ public class Chess extends JFrame implements Runnable {
             g.drawLine(getX(0)+zi*getWidth2()/numColumns ,getY(0) ,
             getX(0)+zi*getWidth2()/numColumns,getY(getHeight2())  );
         }
-
+//black squares
         for (int zrow=0;zrow<numRows;zrow++)
         {
             for (int zcolumn=0;zcolumn<numColumns;zcolumn++)
             {
-                if (board[zrow][zcolumn] != null)
+                if (zrow%2==1)
                 {
-                    g.setColor(board[zrow][zcolumn].getColor());
-                    g.fillRect(getX(0)+zcolumn*getWidth2()/numColumns,
-                    getY(0)+zrow*getHeight2()/numRows,
-                    getWidth2()/numColumns,
-                    getHeight2()/numRows);
-                    if(board[zrow][zcolumn].getColor() != Color.pink)
+                    if(zcolumn==0||zcolumn==2||zcolumn==4||zcolumn==6||zcolumn==8)
                     {
-                        g.setColor(Color.WHITE);
-                        g.setFont(new Font("MS Sans Serif",Font.BOLD,50));
-                        g.drawString("" + board[zrow][zcolumn].getValue(),getX(15)+zcolumn*getWidth2()/numColumns, 
-                        getY(50)+zrow*getHeight2()/numRows);
+                    g.setColor(Color.black);
+                    g.fillRect(getX(0)+zcolumn*getWidth2()/numColumns,getY(0)+zrow*getHeight2()/numRows,getWidth2()/numColumns,getHeight2()/numRows);         
+                    }
+                }
+                if (zrow%2==0)
+                {
+                    if(zcolumn==1||zcolumn==3||zcolumn==5||zcolumn==7)
+                    {
+                    g.setColor(Color.black);
+                    g.fillRect(getX(0)+zcolumn*getWidth2()/numColumns,getY(0)+zrow*getHeight2()/numRows,getWidth2()/numColumns,getHeight2()/numRows);         
                     }
                 }
             }
         }
+//DRAWSTUFF
         
-        g.setColor(Color.black);
-        g.setFont(new Font("MS Sans Serif",Font.BOLD,25));
-        g.drawString("Player 1: " + player1Score, getX(0), getY(0));
-        
-        g.setColor(Color.black);
-        g.setFont(new Font("MS Sans Serif",Font.BOLD,25));
-        g.drawString("Player 2: " + player2Score, getX(getWidth2()/2), getY(0));
-        
-        if(playerOnesTurn)
-            g.setColor(Color.red);
-        else
-            g.setColor(Color.black);
-        g.fillRect(getX(getWidth2()/3), getY(-20), 50, 20);
-    
-        if (winState == WinState.PlayerOne)
-        {
-            g.setColor(Color.magenta);
-            g.setFont(new Font("Monospaced",Font.BOLD,50) );
-            g.drawString("Player 1 has won.", 30, 200);            
-        }
-        else if (winState == WinState.PlayerTwo)
-        {
-            g.setColor(Color.magenta);
-            g.setFont(new Font("Monospaced",Font.BOLD,50) );
-            g.drawString("Player 2 has won.", 30, 200);            
-        }
-        else if (winState == WinState.Tie)
-        {
-            g.setColor(Color.gray);
-            g.setFont(new Font("Monospaced",Font.BOLD,40) );
-            g.drawString("It is a tie.", 50, 200);     
-        }
 
+
+
+            
         gOld.drawImage(image, 0, 0, null);
     }
+
+
 ////////////////////////////////////////////////////////////////////////////
 // needed for     implement runnable
     public void run() {
@@ -295,17 +187,20 @@ public class Chess extends JFrame implements Runnable {
 /////////////////////////////////////////////////////////////////////////
     public void reset() {
         board = new Piece[numRows][numColumns];
-//        for (int zrow = 0;zrow < numRows;zrow++)
-//        {
-//            for (int zcolumn = 0;zcolumn < numColumns;zcolumn++)
-//            {
-//                board[zrow][zcolumn] = null;
-//            }
-//        }
-        playerOnesTurn = true;
-        moveHappened = false;
-        winState = WinState.None;
-        piecesOnBoard = 0;
+        //draw pieces
+        for (int zrow=0;zrow<numRows;zrow++)
+        {
+            for (int zcolumn=0;zcolumn<numColumns;zcolumn++)
+            {
+                if (board[zrow][zcolumn] != null)
+                {
+                    
+                    g.fillOval(getX(0)+zcolumn*getWidth2()/numColumns,getY(0)+zrow*getHeight2()/numRows,getWidth2()/numColumns,getHeight2()/numRows);                    
+                }
+            }
+        }
+
+        //resetcode
     }
 /////////////////////////////////////////////////////////////////////////
     public void animate() {
@@ -319,254 +214,9 @@ public class Chess extends JFrame implements Runnable {
 
             reset();
         }
-        
-        
-        if (moveHappened)
-        { 
-            checkWin();
-            System.out.println(board[currentRow][currentColumn].getValue());
-            moveHappened = false;
-        }
-    }
-////////////////////////////////////////////////////////////////////////////
-    public boolean checkWin() {
-        if(board[currentRow][currentColumn].getColor() == Color.pink)
-            return false;
-        int numConnect = 4;
-//check horizontal.
-        int startColumn = currentColumn - (numConnect-1);
-        if (startColumn < 0)
-            startColumn = 0;
-        int endColumn = currentColumn + (numConnect-1);
-        if (endColumn > numColumns-1)
-            endColumn = numColumns - 1;
-        int numMatch = 0;
-        
-        for (int col = startColumn;numMatch != numConnect && col<=endColumn;col++)
-        {
-            if (board[currentRow][col] != null && board[currentRow][col].getColor() == board[currentRow][currentColumn].getColor())
-                numMatch++;
-            else
-                numMatch = 0;
-            if (numMatch == 1)
-            {
-                winColumn = col;
-                winRow = currentRow;
-            }
-        }
-        
-        if (numMatch == numConnect)
-        {
-            if (board[currentRow][currentColumn].getColor() == Color.red)
-                winState = WinState.PlayerOne;
-            else
-                winState = WinState.PlayerTwo;
-            {
-                for(int index = 0;index != numConnect;index++)
-                {
-                    board[winRow][winColumn+index].setColor(Color.blue);
-    //                board[winRow][winColumn+1].setColor(Color.blue);
-    //                board[winRow][winColumn+2].setColor(Color.blue);
-    //                board[winRow][winColumn+3].setColor(Color.blue);
-                    if(winState == WinState.PlayerOne)
-                        player1Score += board[winRow][winColumn+index].getValue();
-                    else
-                        player2Score += board[winRow][winColumn+index].getValue();
-                }
-            }            
-            return (true);
-        }
-        
-//check vertical.
-        int startRow = currentRow - (numConnect-1);
-        if (startRow < 0)
-            startRow = 0;
-        int endRow = currentRow + (numConnect-1);
-        if (endRow > numRows-1)
-            endRow = numRows - 1;
-        numMatch = 0;
-        
-        for (int row = startRow;numMatch != numConnect && row<=endRow;row++)
-        {
-            if (board[row][currentColumn] != null && board[row][currentColumn].getColor() == board[currentRow][currentColumn].getColor())
-                numMatch++;
-            else
-                numMatch = 0;
-            if (numMatch == 1)
-            {
-                winColumn = currentColumn;
-                winRow = row;
-            }            
-        }
-        
-        if (numMatch == numConnect)
-        {
-            if (board[currentRow][currentColumn].getColor() == Color.red)
-                winState = WinState.PlayerOne;
-            else
-                winState = WinState.PlayerTwo;
-            {
-                for(int index = 0;index!=numConnect;index++)
-                {
-                    board[winRow+index][winColumn].setColor(Color.blue);
-//                board[winRow+1][winColumn].setColor(Color.blue);
-//                board[winRow+2][winColumn].setColor(Color.blue);
-//                board[winRow+3][winColumn].setColor(Color.blue);
-                    if(winState == WinState.PlayerOne)
-                        player1Score += board[winRow+index][winColumn].getValue();
-                    else
-                        player2Score += board[winRow+index][winColumn].getValue();
-                }
-            }             
-            return (true);
-        }        
-//check diagonal right down.
-        startColumn = currentColumn - (numConnect-1);
-        startRow = currentRow - (numConnect-1);
-        if (startColumn < 0 || startRow < 0)
-        {
-            if (startColumn < startRow)
-            {
-                startRow -= startColumn;
-                startColumn = 0;
-            }
-            else
-            {
-                startColumn -= startRow;
-                startRow = 0;
-            }
-        }
-        endColumn = currentColumn + (numConnect-1);
-        endRow = currentRow + (numConnect-1);
-        if (endColumn > numColumns-1 || endRow > numRows-1)
-        {
-            if (endColumn > endRow)
-            {
-                endRow -= (endColumn - (numColumns - 1));
-                endColumn = numColumns-1;
-            }
-            else
-            {
-                endColumn -= (endRow - (numRows - 1));
-                endRow = numRows-1;
-            }
-        }
- 
-        numMatch = 0;    
-        int row = startRow;
-        for (int col = startColumn;numMatch != numConnect && col<=endColumn;col++)
-        {
-            if (board[row][col] != null && board[row][col].getColor() == board[currentRow][currentColumn].getColor())
-                numMatch++;
-            else
-                numMatch = 0;
-            if (numMatch == 1)
-            {
-                winColumn = col;
-                winRow = row;
-            }
-            row++;
-        }
-        
-        if (numMatch == numConnect)
-        {
-            if (board[currentRow][currentColumn].getColor() == Color.red)
-                winState = WinState.PlayerOne;
-            else
-                winState = WinState.PlayerTwo;
-            {
-                for(int index = 0;index!=numConnect;index++)
-                {
-                    board[winRow+index][winColumn+index].setColor(Color.blue);
-//                board[winRow+1][winColumn+1].setColor(Color.blue);
-//                board[winRow+2][winColumn+2].setColor(Color.blue);
-//                board[winRow+3][winColumn+3].setColor(Color.blue);
-                    if(winState == WinState.PlayerOne)
-                        player1Score += board[winRow+index][winColumn+index].getValue();
-                    else
-                        player2Score += board[winRow+index][winColumn+index].getValue();
-                }
-            }            
-            return (true);
-        }
-                
- 
-//check diagonal right up.
-        startColumn = currentColumn - (numConnect-1);
-        startRow = currentRow + (numConnect-1);
-        if (startColumn < 0 || startRow > numRows-1)
-        {
-            if (startColumn < numRows - 1 - startRow)
-            {
-                startRow += startColumn;
-                startColumn = 0;
-            }
-            else
-            {
-                startColumn += startRow - (numRows - 1);
-                startRow = numRows - 1;
-            }
-        }
-        endRow = currentRow - (numConnect-1);
-        endColumn = currentColumn + (numConnect-1);
-        if (endRow < 0 || endColumn > numColumns-1)
-        {
-            if (endRow < numColumns - 1 - endColumn)
-            {
-                endColumn += endRow;
-                endRow = 0;
-            }
-            else
-            {
-                endRow += endColumn - (numColumns - 1);
-                endColumn = numColumns - 1;
-            }
-        }        
- 
-        numMatch = 0;    
-        row = startRow;
-        for (int col = startColumn;numMatch != numConnect && col<=endColumn;col++)
-        {
-            if (board[row][col] != null && board[row][col].getColor() == board[currentRow][currentColumn].getColor())
-                numMatch++;
-            else
-                numMatch = 0;
-            if (numMatch == 1)
-            {
-                winColumn = col;
-                winRow = row;
-            }
-            row--;
-        }
-        
-        if (numMatch == numConnect)
-        {
-            if (board[currentRow][currentColumn].getColor() == Color.red)
-                winState = WinState.PlayerOne;
-            else
-                winState = WinState.PlayerTwo;
-            {
-                for(int index = 0;index != numConnect;index++)
-                {
-                    board[winRow-index][winColumn+index].setColor(Color.blue);
-//                board[winRow-1][winColumn+1].setColor(Color.blue);
-//                board[winRow-2][winColumn+2].setColor(Color.blue);
-//                board[winRow-3][winColumn+3].setColor(Color.blue);
-                    if(winState == WinState.PlayerOne)
-                        player1Score += board[winRow-index][winColumn+index].getValue();
-                    else
-                        player2Score += board[winRow-index][winColumn+index].getValue();
-                }
-            }            
-            return (true);
-        }
-                  
-        if (piecesOnBoard >= numRows*numColumns)
-        {
-            winState = WinState.Tie;
-            return(true);
-        }
-        return(false);
+        //
+        //animate code
+        //
     }
 ////////////////////////////////////////////////////////////////////////////
     public void start() {
